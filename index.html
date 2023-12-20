@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset='utf-8' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://localhost:7280/swagger/index.html"></script>
+    
+
+
+    <script>
+        // קוד הצגת הלוח שנה על המסך
+        // והצגה על המסך 
+
+        document.addEventListener("DOMContentLoaded", function () {
+            axios.get("https://localhost:7280/api/Events").then((res) => {  //https://eventsapi.onrender.com/api/Events
+                var calendarEl = document.getElementById("calendar");
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: "dayGridMonth",
+                    events: res.data,
+                });
+                calendar.render();
+            });
+        });
+
+        //הוספת אירוע 
+        function post() {
+            let titleEl = document.createElement("input")
+            let eventDateEl = document.createElement("input")
+            document.body.appendChild(titleEl)
+            document.body.appendChild(eventDateEl)
+            eventDateEl.type = 'date'
+            titleEl.placeholder = "TITEL"
+            let buttonEl = document.createElement("button")
+            document.body.appendChild(buttonEl)
+            buttonEl.innerText = "POST+"
+            buttonEl.addEventListener("click", function () {
+                //console.log(titleEl.value)
+                //console.log(eventDateEl.value)
+                axios.post("https://localhost:7280/api/Events",  //https://eventsapi.onrender.com/api/Events
+                    {
+                        "title": titleEl.value,
+                        "start": eventDateEl.value
+                    })
+                    
+                    .then((res) => console.log(res.data))
+                //   setInterval(refreshPage, 1000);
+                location.reload(),1000; 
+            })
+        }
+
+                //מחיקת אירוע 
+                function deletev() {
+            let ulEl = document.createElement("ul")
+            axios.get("https://localhost:7280/api/Events").then((res) => { //https://eventsapi.onrender.com/api/Events
+                res.data.forEach(element => {
+                    var liEl = document.createElement("li")
+                    console.log(element.title)
+                    liEl.innerHTML = element.title
+                    liEl.onclick = function () {
+                        let liElId = element.id
+                        console.log(liElId)
+                        axios.delete(`https://localhost:7280/api/Events/${liElId}`) //https://eventsapi.onrender.com/api/Events
+                            .then((res) => console.log(res.data))
+                            location.reload(),1000; 
+                    }
+                    ulEl.appendChild(liEl)
+                });
+                document.body.appendChild(ulEl)
+            })
+        }
+        //עידכון אירוע 
+        function update() {
+            let ulEl = document.createElement("ul")
+            axios.get("https://localhost:7280/api/Events").then((res) => { //https://eventsapi.onrender.com/api/Events
+                res.data.forEach(element => {
+                    var liEl = document.createElement("li")
+                    console.log(element.title)
+                    liEl.innerHTML = element.title
+                    liEl.onclick = function () {
+                        let titleUp = document.createElement("input")
+                        let eventDateUp = document.createElement("input")
+                        document.body.appendChild(titleUp)
+                        document.body.appendChild(eventDateUp)
+                        eventDateUp.type = 'date'
+                        console.log(element.start)
+                        titleUp.placeholder = element.start
+                        titleUp.placeholder = element.title
+                        let buttonUp = document.createElement("button")
+                        document.body.appendChild(buttonUp)
+                        buttonUp.innerText = "POST+"
+                        buttonUp.addEventListener("click", function () {
+                            axios.put(`https://localhost:7280/api/Events/ ${element.id}`, //https://eventsapi.onrender.com/api/Events/
+                                {
+                                    "title": titleUp.value,
+                                    "start": eventDateUp.value
+                                })
+                                
+                                .then((res) => console.log(res.data))
+                location.reload(),1000; 
+
+                                
+                        })
+                    }
+                    ulEl.appendChild(liEl)
+                });
+                document.body.appendChild(ulEl)
+            })
+
+        }
+
+    </script>
+</head>
+
+<body>
+    <button onclick="post()">PostEvent</button>
+    <button onclick="deletev()">DeleteEvent</button>
+    <button onclick="update()">UpdateEvent</button>
+    <div id='calendar'></div>
+</body>
+
+</html>
